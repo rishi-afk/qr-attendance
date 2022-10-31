@@ -40,12 +40,22 @@ class Student(models.Model):
 
 
 class Period(models.Model):
-    paper = models.OneToOneField(Paper, on_delete=models.CASCADE)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
     start = models.TimeField()
     end = models.TimeField()
 
     def __str__(self) -> str:
         return f'{self.paper} | {self.start} - {self.end}'
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(
+                end__gt=models.F("start")), name="check_end_time"),
+            models.UniqueConstraint(
+                fields=['paper', 'start', 'end'],
+                name="unique_period_slot"
+            ),
+        ]
 
 
 class TimeTable(models.Model):
@@ -69,7 +79,7 @@ class Record(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     date = models.DateField()
     entry_time = models.TimeField()
-    exit_time = models.TimeField(null=True)
+    exit_time = models.TimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.student} - {self.date}'
@@ -87,5 +97,7 @@ class Record(models.Model):
 
 class Attendance(models.Model):
     record = models.OneToOneField(Record, on_delete=models.CASCADE)
-    # period = models.ForeignKey(Period, on_delete=models.CASCADE)
     periods = models.ManyToManyField(Period)
+
+    def __str__(self) -> str:
+        return f'{self.record}'
