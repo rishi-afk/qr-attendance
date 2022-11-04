@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-import pytz
-
-IST = pytz.timezone('Asia/Kolkata')
+from django.contrib import admin
+from django.core.exceptions import ValidationError
+from django.forms import ModelForm
+from dashboard.utils import validate_time_table
+from smart_selects.db_fields import ChainedManyToManyField
 
 
 class Course(models.Model):
@@ -41,6 +43,7 @@ class Student(models.Model):
 
 class Period(models.Model):
     paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     start = models.TimeField()
     end = models.TimeField()
 
@@ -60,19 +63,62 @@ class Period(models.Model):
 
 class TimeTable(models.Model):
     course = models.OneToOneField(Course, on_delete=models.CASCADE)
-    monday = models.ManyToManyField(
-        Period, related_name="monday", blank=True)
-    tuesday = models.ManyToManyField(
-        Period, related_name="tuesday", blank=True)
-    wednesday = models.ManyToManyField(
-        Period, related_name="wednesday",  blank=True)
-    thursday = models.ManyToManyField(
-        Period, related_name="thursday",  blank=True)
-    friday = models.ManyToManyField(
-        Period, related_name="friday", blank=True)
+    monday = ChainedManyToManyField(
+        Period,
+        chained_field="course",
+        chained_model_field="course",
+        related_name="monday"
+    )
+    tuesday = ChainedManyToManyField(
+        Period,
+        chained_field="course",
+        chained_model_field="course",
+        related_name="tuesday"
+    )
+    wednesday = ChainedManyToManyField(
+        Period,
+        chained_field="course",
+        chained_model_field="course",
+        related_name="wednesday"
+    )
+    thursday = ChainedManyToManyField(
+        Period,
+        chained_field="course",
+        chained_model_field="course",
+        related_name="thursday",
+        blank=True
+    )
+    friday = ChainedManyToManyField(
+        Period,
+        chained_field="course",
+        chained_model_field="course",
+        related_name="friday",
+        blank=True
+    )
 
     def __str__(self) -> str:
-        return f'{self.course}'
+        return f'{self.course}'\
+
+
+
+class TimeTableForm(ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        errors = validate_time_table(cleaned_data)
+        if (len(errors)):
+            raise ValidationError(
+                'Multiple periods in same time slot on %(value)s',
+                code='invalid',
+                params={'value': ", ".join(errors)},
+            )
+
+    class Meta:
+        model = TimeTable
+        fields = '__all__'
+
+
+class TimeTableAdmin(admin.ModelAdmin):
+    form = TimeTableForm
 
 
 class Record(models.Model):
@@ -96,8 +142,30 @@ class Record(models.Model):
 
 
 class Attendance(models.Model):
-    record = models.OneToOneField(Record, on_delete=models.CASCADE)
-    periods = models.ManyToManyField(Period)
+    record = models.ForeignKey(Record, on_delete=models.CASCADE)
+    period = models.ForeignKey(Period, on_delete=models.CASCADE)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return f'{self.record}'
+
+
+# ## fetch attendance for start, end date by doing
+# Attendance.objects.filter(record__student="", record__date__range="")
+# # get attendance object for a specific date
+# # this object will consist of periods attendance marked for that specific date
+# Attendance.objects.filter(record__student="", record__date="").get()
+# getattr(TimeTable.objects.get(course=""), "") # get periods for that specific day and course
+# # compare above two to show attendance by creating a table of periods and marking tick or cross
+
+
+# ## for a specific paper
+# Attendance.objects.filter(record__student="", record__date="", periods__paper_id="")
+# Attendance.objects.filter(record__student="", record__date__range=(date(), date()), periods__paper_id="")
+
+# for professor side
+# choose paper
+# view list of students, lectures attended, total lectures happened, percentage (overall)
+
+# for student side
+# for all papers show total lectures attended, total lectures

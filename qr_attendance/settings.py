@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-cts*@vek-z)o=sxdf8)c7z486j2bxx(765z_ribnt_7q3ka5wx'
@@ -23,6 +22,7 @@ INSTALLED_APPS = [
     'qr_code',
     'debug_toolbar',
     'api',
+    "smart_selects"
 ]
 
 MIDDLEWARE = [
@@ -55,7 +55,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'qr_attendance.wsgi.application'
-
+USE_DJANGO_JQUERY = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -92,6 +92,11 @@ CACHES = {
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 
 USE_I18N = True
 
