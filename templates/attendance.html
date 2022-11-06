@@ -1,0 +1,21 @@
+{% load render_table from django_tables2 %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Attendance</title>
+        <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        />
+    </head>
+    <body>
+        {% load tailwind_filters %}
+        <form action="{% url 'attendance' paper_id %}" method="post">
+            {% csrf_token %}
+            {{ form }}
+            {{ form.errors }}
+            <input type="submit" value="Submit">
+        </form>
+        {% render_table table %}
+    </body>
+</html>

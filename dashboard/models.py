@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -16,7 +16,7 @@ class Course(models.Model):
 
 
 class Professor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     employee_id = models.CharField(max_length=50)
 
     def __str__(self) -> str:
@@ -33,7 +33,7 @@ class Paper(models.Model):
 
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     roll_number = models.CharField(max_length=20, unique=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
@@ -97,8 +97,7 @@ class TimeTable(models.Model):
     )
 
     def __str__(self) -> str:
-        return f'{self.course}'\
-
+        return f'{self.course}'
 
 
 class TimeTableForm(ModelForm):
@@ -143,29 +142,9 @@ class Record(models.Model):
 
 class Attendance(models.Model):
     record = models.ForeignKey(Record, on_delete=models.CASCADE)
-    period = models.ForeignKey(Period, on_delete=models.CASCADE)
     paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    total = models.SmallIntegerField()
+    attended = models.SmallIntegerField()
 
     def __str__(self) -> str:
         return f'{self.record}'
-
-
-# ## fetch attendance for start, end date by doing
-# Attendance.objects.filter(record__student="", record__date__range="")
-# # get attendance object for a specific date
-# # this object will consist of periods attendance marked for that specific date
-# Attendance.objects.filter(record__student="", record__date="").get()
-# getattr(TimeTable.objects.get(course=""), "") # get periods for that specific day and course
-# # compare above two to show attendance by creating a table of periods and marking tick or cross
-
-
-# ## for a specific paper
-# Attendance.objects.filter(record__student="", record__date="", periods__paper_id="")
-# Attendance.objects.filter(record__student="", record__date__range=(date(), date()), periods__paper_id="")
-
-# for professor side
-# choose paper
-# view list of students, lectures attended, total lectures happened, percentage (overall)
-
-# for student side
-# for all papers show total lectures attended, total lectures

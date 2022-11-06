@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-
-from qr_attendance.settings import SECRET_KEY
-from .forms import StudentForm, UserForm
 from django.db import transaction
 import jwt
-
 import pytz
+from qr_attendance.settings import SECRET_KEY
+from dashboard.models import Attendance, Paper
+from .forms import StudentForm, UserForm
+from .tables import AttendanceTable
+from .forms import DateInputForm
 IST = pytz.timezone('Asia/Kolkata')
 
 
@@ -15,11 +16,40 @@ IST = pytz.timezone('Asia/Kolkata')
 def home(request):
     if (request.user.is_superuser):
         return redirect("/admin")
-    now = datetime.now(IST)
-    exp = now + timedelta(minutes=100)
-    encoded_jwt = jwt.encode(
-        {"id": request.user.id, "iat": now, "exp": exp}, SECRET_KEY, algorithm="HS256")
-    return render(request, 'home.html', {'qr_token': encoded_jwt})
+    student = getattr(request.user, "student", None)
+    if (student):
+        now = datetime.now(IST)
+        exp = now + timedelta(minutes=100)
+        encoded_jwt = jwt.encode(
+            {"id": request.user.id, "iat": now, "exp": exp}, SECRET_KEY, algorithm="HS256")
+        papers = Paper.objects.filter(course=request.user.student.course)
+        return render(request, 'home.html', {'qr_token': encoded_jwt, 'papers': papers})
+    else:
+        return render(request, 'professor.html')
+
+
+DAYS = {0: 'monday', 1: 'tuesday',
+        2: 'wednesday', 3: 'thursday', 4: 'friday'}
+
+
+@login_required()
+def attendance(request, paper_id):
+    if (request.method == "POST"):
+        form = DateInputForm(request.POST)
+        if (form.is_valid()):
+            date = form.cleaned_data['date']
+            if (date):
+                table = AttendanceTable(Attendance.objects.filter(
+                    record__student__user__id=request.user.id, paper__id=paper_id, record__date=form.cleaned_data['date']))
+            else:
+                table = AttendanceTable(Attendance.objects.filter(
+                    record__student__user__id=request.user.id, paper__id=paper_id))
+    else:
+        form = DateInputForm()
+        table = AttendanceTable(Attendance.objects.filter(
+            record__student__user__id=request.user.id, paper__id=paper_id))
+        return render(request, "attendance.html", {"table": table, 'form': form, 'paper_id': paper_id})
+    return render(request, "attendance.html", {"table": table, 'form': form, 'paper_id': paper_id})
 
 
 @transaction.atomic

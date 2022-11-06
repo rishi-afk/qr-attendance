@@ -22,7 +22,8 @@ INSTALLED_APPS = [
     'qr_code',
     'debug_toolbar',
     'api',
-    "smart_selects"
+    "smart_selects",
+    "django_tables2",
 ]
 
 MIDDLEWARE = [

@@ -14,3 +14,7 @@ class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ["roll_number", "course"]
+
+
+class DateInputForm(forms.Form):
+    date = forms.DateField(required=False, widget=forms.SelectDateWidget())

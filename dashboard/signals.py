@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from django.db.models import Q
+from django.db.models import Q, Count
 from dashboard.models import Attendance, Record, TimeTable
 
 DAYS = {0: 'monday', 1: 'tuesday',
@@ -17,9 +17,21 @@ def mark_attendance(sender, instance, created, **kwargs):
         c2 = Q(end__range=(entry_time, exit_time))
         periods = getattr(TimeTable.objects.get(
             course=instance.student.course), DAYS[date.weekday()]).filter(c1 & c2)
-        print(periods)
+        periods_attended = periods.values(
+            "paper").annotate(attended=Count('paper'))
+        attended = {period["paper"]: period["attended"]
+                    for period in periods_attended}
+
+        total_papers = getattr(TimeTable.objects.get(
+            course=instance.student.course), DAYS[date.weekday()]).values("paper").annotate(total=Count('paper'))
+
+        attendance_count = [{'paper_id': paper['paper'], 'total':paper['total'],
+                             'attended': attended.get(paper['paper'], 0)} for paper in total_papers]
         bulk_attendance = []
-        for period in periods:
+        for attendance in attendance_count:
+            paper_id = attendance.get('paper_id')
+            total = attendance.get('total')
+            attended = attendance.get('attended')
             bulk_attendance.append(Attendance(
-                record=instance, period=period, paper=period.paper))
+                record=instance, paper_id=paper_id, total=total, attended=attended))
         Attendance.objects.bulk_create(bulk_attendance)

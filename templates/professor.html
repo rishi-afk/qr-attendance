@@ -1,0 +1,6 @@
+{% extends 'base.html' %} 
+{% block title %}Professor | Home{% endblock %} 
+{% block content%} 
+Welcome, {{ user.username }}!
+<p><a href="{% url 'logout' %}">Log Out</a></p>
+{% endblock %}

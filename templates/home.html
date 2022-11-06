@@ -1,14 +1,16 @@
 {% extends 'base.html' %} 
-{% block title %}Home{% endblock %} 
+{% block title %}Student | Home{% endblock %} 
 {% load qr_code %}
 {% block content%} 
-{% if user.is_authenticated %} Hi {{ user.username }}!
-{{qr_token}}
+Hi {{ user.username }}!
+<!-- {{qr_token}} -->
 {% qr_from_text qr_token size="m" %}
+<ul>
+    {% for paper in papers %}
+        <li>
+            <a href="{% url 'attendance' paper.id %}">{{ paper }}</a>
+        </li>
+    {% endfor %}
+</ul>
 <p><a href="{% url 'logout' %}">Log Out</a></p>
-<p><a href="{% url 'change-password' %}">Change Password</a></p>
-{% else %}
-<p>You are not logged in</p>
-<a href="{% url 'login' %}">Log In</a>
-{% endif %}
 {% endblock %}
