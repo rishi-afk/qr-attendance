@@ -98,7 +98,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-
 USE_I18N = True
 
 USE_TZ = True

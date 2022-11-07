@@ -3,7 +3,6 @@
 {% load qr_code %}
 {% block content%} 
 Hi {{ user.username }}!
-<!-- {{qr_token}} -->
 {% qr_from_text qr_token size="m" %}
 <ul>
     {% for paper in papers %}

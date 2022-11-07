@@ -18,3 +18,9 @@ class StudentForm(forms.ModelForm):
 
 class DateInputForm(forms.Form):
     date = forms.DateField(required=False, widget=forms.SelectDateWidget())
+
+
+class DateStudentFilterForm(forms.Form):
+    date = forms.DateField(required=False, widget=forms.SelectDateWidget())
+    student = forms.ModelChoiceField(required=False,
+                                     queryset=Student.objects.all())

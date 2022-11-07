@@ -9,6 +9,23 @@ DAYS = {0: 'monday', 1: 'tuesday',
 
 @receiver(post_save, sender=Record)
 def mark_attendance(sender, instance, created, **kwargs):
+    if created and instance.absent == True:
+        # TODO: schedule a job at 6PM to iterate through all the students and if an attendance record does not exist,
+        # create a record with absent = True
+        # this signal will recieve it and mark not attended for all lectures for that day
+        total_papers = getattr(TimeTable.objects.get(
+            course=instance.student.course), DAYS[date.weekday()]).values("paper").annotate(total=Count('paper'))
+        attendance_count = [{'paper_id': paper['paper'], 'total':paper['total'],
+                             'attended': 0} for paper in total_papers]
+        bulk_attendance = []
+        for attendance in attendance_count:
+            paper_id = attendance.get('paper_id')
+            total = attendance.get('total')
+            attended = attendance.get('attended')
+            bulk_attendance.append(Attendance(
+                record=instance, paper_id=paper_id, total=total, attended=attended))
+        Attendance.objects.bulk_create(bulk_attendance)
+
     if not created and instance.entry_time and instance.exit_time:
         date = instance.date
         entry_time = instance.entry_time

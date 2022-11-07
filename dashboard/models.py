@@ -120,11 +120,16 @@ class TimeTableAdmin(admin.ModelAdmin):
     form = TimeTableForm
 
 
+class RecordAdmin(admin.ModelAdmin):
+    readonly_fields = ("absent",)
+
+
 class Record(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     date = models.DateField()
     entry_time = models.TimeField()
     exit_time = models.TimeField(null=True, blank=True)
+    absent = models.BooleanField(default=False, blank=True)
 
     def __str__(self) -> str:
         return f'{self.student} - {self.date}'

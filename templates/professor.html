@@ -2,5 +2,10 @@
 {% block title %}Professor | Home{% endblock %} 
 {% block content%} 
 Welcome, {{ user.username }}!
+{% for paper in papers %}
+    <li>
+        <a href="{% url 'attendance' paper.id %}">{{ paper }}</a>
+    </li>
+{% endfor %}
 <p><a href="{% url 'logout' %}">Log Out</a></p>
 {% endblock %}
