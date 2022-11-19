@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import Q, Count
 from dashboard.models import Attendance, Record, TimeTable
@@ -10,11 +10,8 @@ DAYS = {0: 'monday', 1: 'tuesday',
 @receiver(post_save, sender=Record)
 def mark_attendance(sender, instance, created, **kwargs):
     if created and instance.absent == True:
-        # TODO: schedule a job at 6PM to iterate through all the students and if an attendance record does not exist,
-        # create a record with absent = True
-        # this signal will recieve it and mark not attended for all lectures for that day
         total_papers = getattr(TimeTable.objects.get(
-            course=instance.student.course), DAYS[date.weekday()]).values("paper").annotate(total=Count('paper'))
+            course=instance.student.course), DAYS[instance.date.weekday()]).values("paper").annotate(total=Count('paper'))
         attendance_count = [{'paper_id': paper['paper'], 'total':paper['total'],
                              'attended': 0} for paper in total_papers]
         bulk_attendance = []
