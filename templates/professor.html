@@ -1,11 +1,44 @@
-{% extends 'base.html' %} 
+{% extends 'home-base.html' %} 
 {% block title %}Professor | Home{% endblock %} 
-{% block content%} 
-Welcome, {{ user.username }}!
-{% for paper in papers %}
-    <li>
-        <a href="{% url 'attendance' paper.id %}">{{ paper }}</a>
-    </li>
-{% endfor %}
-<p><a href="{% url 'logout' %}">Log Out</a></p>
+{% block content%}
+<main>
+    <div class="content">
+        <div class="welcome mb-12">
+            Welcome, <strong>{{ user.username }}!</strong> 
+        </div>
+        <div class="w-full bg-white rounded-lg shadow">
+            <ul class="divide-y-2 divide-gray-100">
+                {% for paper in papers %}
+                <li class="p-3">
+                    <a href="{% url 'attendance' paper.id %}">{{ paper }}</a>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="mt-12 text-center">
+            <a href="{% url 'logout' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-24">Log Out</a> 
+        </div>
+    </div>
+</main>
+<style>
+     main {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        
+    }
+    .content {
+        min-width: 600px;
+        max-width: 800px;
+    }
+    .qr-code {
+        display: flex;
+        justify-content: center;
+    }
+    .welcome {
+        width: 100%;
+        text-align: center;
+        font-size: 32px;
+    }
+</style>
 {% endblock %}

@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import Student
+from dashboard.models import Student
 
 
 class UserForm(UserCreationForm):
@@ -16,11 +16,10 @@ class StudentForm(forms.ModelForm):
         fields = ["roll_number", "course"]
 
 
-class DateInputForm(forms.Form):
-    date = forms.DateField(required=False, widget=forms.SelectDateWidget())
-
-
 class DateStudentFilterForm(forms.Form):
     date = forms.DateField(required=False, widget=forms.SelectDateWidget())
     student = forms.ModelChoiceField(required=False,
-                                     queryset=Student.objects.all())
+                                     queryset=Student.objects.all(), widget=forms.Select())
+
+class DateFilterForm(forms.Form):
+    date = forms.DateField(required=False, widget=forms.SelectDateWidget())

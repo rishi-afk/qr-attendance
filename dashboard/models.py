@@ -17,7 +17,7 @@ class Course(models.Model):
 
 class Professor(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    employee_id = models.CharField(max_length=50)
+    employee_id = models.CharField(max_length=50, unique=True)
 
     def __str__(self) -> str:
         return f'{self.user.username}'
@@ -67,19 +67,23 @@ class TimeTable(models.Model):
         Period,
         chained_field="course",
         chained_model_field="course",
-        related_name="monday"
+        related_name="monday",
+        blank=True
     )
     tuesday = ChainedManyToManyField(
         Period,
         chained_field="course",
         chained_model_field="course",
-        related_name="tuesday"
+        related_name="tuesday",
+        blank=True
+
     )
     wednesday = ChainedManyToManyField(
         Period,
         chained_field="course",
         chained_model_field="course",
-        related_name="wednesday"
+        related_name="wednesday",
+        blank=True
     )
     thursday = ChainedManyToManyField(
         Period,

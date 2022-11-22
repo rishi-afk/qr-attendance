@@ -1,32 +1,162 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>Entry Scanner</title>
+        <title>Exit Scanner</title>
         {% load static %}
         <script
             src="{% static 'scanner/jsQR.js' %}"
             defer
             type="text/javascript"
         ></script>
+        <style>
+            html,
+            body,
+            div,
+            span,
+            applet,
+            object,
+            iframe,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            p,
+            blockquote,
+            pre,
+            a,
+            abbr,
+            acronym,
+            address,
+            big,
+            cite,
+            code,
+            del,
+            dfn,
+            em,
+            img,
+            ins,
+            kbd,
+            q,
+            s,
+            samp,
+            small,
+            strike,
+            strong,
+            sub,
+            sup,
+            tt,
+            var,
+            b,
+            u,
+            i,
+            center,
+            dl,
+            dt,
+            dd,
+            ol,
+            ul,
+            li,
+            fieldset,
+            form,
+            label,
+            legend,
+            table,
+            caption,
+            tbody,
+            tfoot,
+            thead,
+            tr,
+            th,
+            td,
+            article,
+            aside,
+            canvas,
+            details,
+            embed,
+            figure,
+            figcaption,
+            footer,
+            header,
+            hgroup,
+            menu,
+            nav,
+            output,
+            ruby,
+            section,
+            summary,
+            time,
+            mark,
+            audio,
+            video {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+            /* HTML5 display-role reset for older browsers */
+            article,
+            aside,
+            details,
+            figcaption,
+            figure,
+            footer,
+            header,
+            hgroup,
+            menu,
+            nav,
+            section {
+                display: block;
+            }
+            body {
+                line-height: 1;
+            }
+            ol,
+            ul {
+                list-style: none;
+            }
+            blockquote,
+            q {
+                quotes: none;
+            }
+            blockquote:before,
+            blockquote:after,
+            q:before,
+            q:after {
+                content: "";
+                content: none;
+            }
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+        </style>
     </head>
-    <body>
+    <body
+        style="
+            height: 100vh;
+            width: full;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        "
+    >
         <div id="loadingMessage">
             🎥 Unable to access video stream (please make sure you have a webcam
             enabled)
         </div>
         <canvas id="canvas" hidden></canvas>
-        <div id="output" hidden>
-            <div id="outputMessage">No QR code detected.</div>
-            <div hidden><b>Data:</b> <span id="outputData"></span></div>
-        </div>
         <script>
-            var video = document.createElement("video");
-            var canvasElement = document.getElementById("canvas");
-            var canvas = canvasElement.getContext("2d");
-            var loadingMessage = document.getElementById("loadingMessage");
-            var outputContainer = document.getElementById("output");
-            var outputMessage = document.getElementById("outputMessage");
-            var outputData = document.getElementById("outputData");
+            const sleep = (ms) => {
+                return new Promise((resolve) => setTimeout(resolve, ms));
+            };
+            const video = document.createElement("video");
+            const canvasElement = document.getElementById("canvas");
+            const canvas = canvasElement.getContext("2d");
+            const loadingMessage = document.getElementById("loadingMessage");
 
             const drawLine = (begin, end, color) => {
                 canvas.beginPath();
@@ -39,7 +169,7 @@
 
             navigator.mediaDevices
                 .getUserMedia({ video: { facingMode: "environment" } })
-                .then(function (stream) {
+                .then((stream) => {
                     video.srcObject = stream;
                     video.setAttribute("playsinline", true);
                     video.play();
@@ -51,8 +181,6 @@
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     loadingMessage.hidden = true;
                     canvasElement.hidden = false;
-                    outputContainer.hidden = false;
-
                     canvasElement.height = video.videoHeight;
                     canvasElement.width = video.videoWidth;
                     canvas.drawImage(
@@ -62,13 +190,13 @@
                         canvasElement.width,
                         canvasElement.height
                     );
-                    var imageData = canvas.getImageData(
+                    const imageData = canvas.getImageData(
                         0,
                         0,
                         canvasElement.width,
                         canvasElement.height
                     );
-                    var code = jsQR(
+                    const code = jsQR(
                         imageData.data,
                         imageData.width,
                         imageData.height,
@@ -77,7 +205,6 @@
                         }
                     );
                     if (code) {
-                        // execute procedure call
                         drawLine(
                             code.location.topLeftCorner,
                             code.location.topRightCorner,
@@ -98,20 +225,20 @@
                             code.location.topLeftCorner,
                             "#FF3B58"
                         );
-                        fetch("/api/exit/", {
-                            method: "post",
-                            headers: { Authorization: `Bearer ${code.data}` },
-                        })
-                            .then((res) => res.json())
-                            .then((json) => {
-                                outputMessage.hidden = true;
-                                outputData.parentElement.hidden = false;
-                                outputData.innerText = json.message;
+                        try {
+                            const response = await fetch("/api/exit/", {
+                                method: "post",
+                                headers: {
+                                    Authorization: `Bearer ${code.data}`,
+                                },
                             });
-                        return;
-                    } else {
-                        outputMessage.hidden = false;
-                        outputData.parentElement.hidden = true;
+                            const json = await response.json();
+                            alert(json.message);
+                        } catch (error) {
+                            alert(
+                                "Some error occured! Check logs for more info."
+                            );
+                        }
                     }
                 }
                 requestAnimationFrame(tick);

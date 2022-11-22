@@ -1,21 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+
 {% load render_table from django_tables2 %}
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Attendance</title>
-        <link
-            rel="stylesheet"
-            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-        />
-    </head>
-    <body>
-        {% load tailwind_filters %}
-        <form action="{% url 'attendance' paper_id %}" method="post">
-            {% csrf_token %}
-            {{ form }}
-            {{ form.errors }}
-            <input type="submit" value="Submit">
-        </form>
-        {% render_table table %}
-    </body>
-</html>
+{% load export_url from django_tables2 %}
+{% load tailwind_filters %}
+<div style="width: 100%; display: inline-flex; justify-content: space-between; align-items: center; padding: 8px 8px 8px 8px;">
+  <form method="get">
+      {{form.as_table}}
+      <input type="submit" value="Submit">
+  </form>
+  {% if enable_download %}
+  <a href='{% export_url "csv" %}'>Download CSV</a>
+  {% endif %}
+</div>
+{% if enable_charts %}
+<div style="width: 500px; opacity: 0.8; position: fixed; bottom: 2rem; right: 20px;">
+    <canvas id="myChart"></canvas>
+</div>
+<script>
+    const ctx = document.getElementById('myChart');
+    const options = {
+      plugins: {
+        title: {
+            display: true,
+            text: `{{paper_code|safe}}`,
+            font: {
+              size: 18,
+              family: 'Manrope'
+            }
+        },
+        datalabels: {
+          formatter: (value, ctx) => {
+            let datasets = ctx.chart.data.datasets;
+            if (datasets.indexOf(ctx.dataset) === datasets.length - 1) {
+              let sum = datasets[0].data.reduce((a, b) => a + b, 0);
+              let percentage = Math.round((value / sum) * 100) + '%';
+              return percentage;
+            } else {
+              return percentage;
+            }
+          },
+          color: '#fff',
+          font: {
+              size: 18,
+              family: 'Manrope'
+            }
+        }
+      }
+    }
+    const data = {
+      labels: [
+        'Present',
+        'Absent',
+      ],
+      datasets: [{
+        label: 'CA701',
+        data: {{data|safe}},
+        backgroundColor: [
+            '#10B981',
+          '#F87171',
+        ],
+        hoverOffset: 4
+      }]
+    };
+    new Chart(ctx, {
+      type: 'doughnut',
+      data,
+      options,
+      plugins: [ChartDataLabels],
+    });
+</script>
+{% endif%}
+{% render_table table %}
+{% endblock %}

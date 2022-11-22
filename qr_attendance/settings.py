@@ -1,3 +1,5 @@
+import pytz
+from datetime import datetime
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-cts*@vek-z)o=sxdf8)c7z486j2bxx(765z_ribnt_7q3ka5wx'
@@ -24,6 +26,7 @@ INSTALLED_APPS = [
     'api',
     "smart_selects",
     "django_tables2",
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -66,16 +69,10 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
 ]
 
@@ -124,3 +121,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+IST = pytz.timezone('Asia/Kolkata')
+EXPIRY = 60*2
+DAYS = {0: 'monday', 1: 'tuesday',
+        2: 'wednesday', 3: 'thursday', 4: 'friday'}
+TOLERENCE = 2
+DEFAULT_ATTENDANCE_ENTRY_TIME = datetime.now(IST).replace(
+    hour=9, minute=0, second=0, microsecond=0)

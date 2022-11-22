@@ -1,28 +1,40 @@
+import logging
 from django.core.management.base import BaseCommand, CommandError
 from dashboard.models import Student, Record
+from django.conf import settings
 from datetime import datetime
-import pytz
-IST = pytz.timezone('Asia/Kolkata')
 
 
 class Command(BaseCommand):
     help = 'Marks attendance for all absent students'
 
     def handle(self, *args, **options):
-        DEFAULT_ENTRY_TIME = datetime.now(IST).replace(
-            hour=9, minute=0, second=0, microsecond=0)
-
-        TODAY = datetime.now(IST).date()
+        TODAY = datetime.now(settings.IST).date()
+        # Procedure 1
         try:
-            today = datetime(2022, 11, 18)
-            marked = Record.objects.filter(
-                date=today).values_list('student_id', flat=True)
-            students = Student.objects.exclude(id__in=marked)
-            for student in students:
-                record = Record(student=student, date=today,
-                                entry_time=DEFAULT_ENTRY_TIME, absent=True)
+            no_exits = Record.objects.filter(
+                date=TODAY, exit_time__isnull=True)
+            for record in no_exits:
+                record.absent = True
                 record.save()
             self.stdout.write(self.style.SUCCESS(
-                'Successfully marked absentees'))
+                'Session_End: Procedure #1 Successfull'))
         except:
-            raise CommandError('Error in marking attendance')
+            logging.exception("Session_End: Procedure #1 Failed")
+            raise CommandError(
+                'Session_End: Procedure #1 Failed')
+
+        # Procedure 2
+        try:
+            marked = Record.objects.filter(
+                date=TODAY).values_list('student_id', flat=True)
+            students = Student.objects.exclude(id__in=marked)
+            for student in students:
+                record = Record(student=student, date=TODAY,
+                                entry_time=settings.DEFAULT_ATTENDANCE_ENTRY_TIME, absent=True)
+                record.save()
+            self.stdout.write(self.style.SUCCESS(
+                'Session_End: Procedure #2 Successfull'))
+        except:
+            logging.exception("Session_End: Procedure #2 Failed")
+            raise CommandError('Session_End: Procedure #2 Failed')
