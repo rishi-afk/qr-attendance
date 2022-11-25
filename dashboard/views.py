@@ -20,7 +20,7 @@ def home(request):
     student = getattr(request.user, "student", None)
     if (student):
         now = datetime.now(settings.IST)
-        exp = now + timedelta(minutes=100)
+        exp = now + timedelta(minutes=settings.AUTH_EXPIRY)
         encoded_jwt = jwt.encode(
             {"id": request.user.id, "iat": now, "exp": exp}, SECRET_KEY, algorithm="HS256")
         papers = Paper.objects.filter(course=student.course)
@@ -104,7 +104,7 @@ def attendance(request, paper_id):
             return render(request, "attendance.html", {"table": table, "enable_download": True, 'enable_charts': False, "form": form, 'paper_id': paper_id})
 
 
-@ transaction.atomic
+@transaction.atomic
 def register(response):
     if (response.user.is_authenticated):
         return redirect("/")

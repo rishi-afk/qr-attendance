@@ -11,6 +11,7 @@
       {{form.as_table}}
       <input type="submit" value="Submit">
   </form>
+  <a href="{% url 'home' %}">Dashboard</a>
   {% if enable_download %}
   <a href='{% export_url "csv" %}'>Download CSV</a>
   {% endif %}

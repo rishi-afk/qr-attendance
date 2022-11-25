@@ -34,7 +34,7 @@ def entry(request):
         cache.set(f'{request.user.id}-Entry', True, settings.EXPIRY)
         return Response({"message": f"{request.user.student.roll_number} : Entry Recorded"}, status=status.HTTP_201_CREATED)
     except IntegrityError:
-        return Response({"message": f"{request.user.student.roll_number} : Entry Recorded"}, status=status.HTTP_208_ALREADY_REPORTED)
+        return Response({"message": f"{request.user.student.roll_number} : Entry Already Recorded"}, status=status.HTTP_208_ALREADY_REPORTED)
     except Period.DoesNotExist:
         return Response({"message": f"{request.user.student.roll_number} : No Entry"}, status=status.HTTP_404_NOT_FOUND)
 

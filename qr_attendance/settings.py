@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'api',
     "smart_selects",
     "django_tables2",
-    'django_filters'
+    'django_filters',
+    "django_extensions"
 ]
 
 MIDDLEWARE = [
@@ -116,6 +117,10 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
 }
 
+GRAPH_MODELS = {
+    'app_labels': ["dashboard"],
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -123,9 +128,10 @@ REST_FRAMEWORK = {
 }
 
 IST = pytz.timezone('Asia/Kolkata')
+TOLERENCE = 5
 EXPIRY = 60*2
+AUTH_EXPIRY = 100
 DAYS = {0: 'monday', 1: 'tuesday',
         2: 'wednesday', 3: 'thursday', 4: 'friday'}
-TOLERENCE = 2
 DEFAULT_ATTENDANCE_ENTRY_TIME = datetime.now(IST).replace(
     hour=9, minute=0, second=0, microsecond=0)

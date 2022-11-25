@@ -232,11 +232,14 @@
                                     Authorization: `Bearer ${code.data}`,
                                 },
                             });
-                            const json = await response.json();
-                            alert(json.message);
+                            if(response.ok) {
+                                const json = await response.json();
+                                alert(json.message);
+                            }
+                            else throw new Error('Unauthorized')
                         } catch (error) {
                             alert(
-                                "Some error occured! Check logs for more info."
+                                error.message ? error.message : "Some error occured! Check logs for more info."
                             );
                         }
                     }
